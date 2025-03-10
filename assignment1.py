@@ -14,7 +14,7 @@ class AssetEnv(Environment):
     def __init__(self, initial_wealth=10, T=10, aversion_rate=0.01, riskless_return=2,
                  risky_return=None, action_space=None):
         if risky_return is None:
-            risky_return = {0.4: -0.5, 0.6: -0.3}  # 概率到收益率的映射
+            risky_return = {0.4: 0.5, 0.6: 0.3}  # 概率到收益率的映射
         if action_space is None:
             action_space = [0.2, 0.8]  # 可选择的投资比例
 
@@ -141,11 +141,36 @@ if __name__ == '__main__':
     env = AssetEnv(initial_wealth=10, T=10)
     agent = SARSAAgent(env)
     Q, policy = agent.train(episodes=1000)
-    
     # 输出最终策略示例
+    hist = []
     for t in range(env.T):
         print(f"Time {t}:")
         for wealth in sorted(env.state_space[t]):
-            
             best_action = max(policy[t][wealth], key=policy[t][wealth].get)
+            hist.append(best_action)
             print(f"  Wealth {wealth:.2f}: Best Action {best_action}")
+    import matplotlib.pyplot as plt
+    import numpy as np
+
+    # 计算每个时间步动作的平均值
+    action_distribution = {}
+    for t in range(env.T):
+        actions_at_t = []
+        for wealth in env.state_space[t]:
+            best_action = max(policy[t][wealth], key=policy[t][wealth].get)
+            actions = action_distribution.get(t, [])
+            actions_at_t = actions + [best_action]
+            action_distribution[t] = actions_at_t
+
+    # 计算每个时间步动作的平均
+    avg_actions = [np.mean(action_distribution[t]) for t in range(env.T)]
+
+    # 绘制平均动作随时间变化的图表
+    plt.figure(figsize=(12, 6))
+    plt.plot(range(env.T), avg_actions, marker='o', linestyle='-', color='b')
+
+    plt.xlabel('Time')
+    plt.ylabel('Average Action (Risky Asset Allocation)')
+    plt.title('Average Optimal Action over Time (SARSA Policy)')
+    plt.grid(True)
+    plt.show()
