@@ -11,12 +11,12 @@ class Environment(ABC):
         pass
 
 class AssetEnv(Environment):
-    def __init__(self, initial_wealth=10, T=10, aversion_rate=0.01, riskless_return=2,
+    def __init__(self, initial_wealth=10, T=10, aversion_rate=0.01, riskless_return=0.02,
                  risky_return=None, action_space=None):
         if risky_return is None:
-            risky_return = {0.4: 0.5, 0.6: 0.3}  # 概率到收益率的映射
+            risky_return = {0.4: 5, 0.6: 3}  # 概率到收益率的映射
         if action_space is None:
-            action_space = [0.2, 0.8]  # 可选择的投资比例
+            action_space = [0, 1]  # 可选择的投资比例
 
         self.aversion_rate = aversion_rate
         self.riskless_return = riskless_return
@@ -38,16 +38,26 @@ class AssetEnv(Environment):
                 transition_dict[t][wealth] = {}
                 for action in self.action_space:
                     transitions = []
-                    # 生成所有可能的转移
-                    for prob, risky_r in self.risky_return.items():
+                    if action == 0:
                         next_wealth = np.round(
-                            wealth * (action*(1+risky_r) + (1-action)*(1+self.riskless_return)),
+                            wealth * ((1-action)*(1+self.riskless_return)),
                             3
                         )
                         self.state_space[t+1].add(next_wealth)
                         done = (t == self.T-1)
                         reward = self.cara_reward(next_wealth) if done else 0
-                        transitions.append( (prob, next_wealth, reward, done) )
+                        transitions.append( (1, next_wealth, reward, done) )
+                    else:
+                        # 生成所有可能的转移
+                        for prob, risky_r in self.risky_return.items():
+                            next_wealth = np.round(
+                                wealth * (action*(1+risky_r) + (1-action)*(1+self.riskless_return)),
+                                3
+                            )
+                            self.state_space[t+1].add(next_wealth)
+                            done = (t == self.T-1)
+                            reward = self.cara_reward(next_wealth) if done else 0
+                            transitions.append( (prob, next_wealth, reward, done) )
                     transition_dict[t][wealth][action] = transitions
         return transition_dict
 
@@ -67,7 +77,7 @@ class AssetEnv(Environment):
         return next_wealth, reward, done, {}
 
     def cara_reward(self, wealth):
-        return -np.exp(-self.aversion_rate * wealth) / self.aversion_rate
+        return wealth
 
 class SARSAAgent:
     def __init__(self, env, discount_factor=0.9, epsilon=0.1, alpha=0.1):
