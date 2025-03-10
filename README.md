@@ -1,4 +1,4 @@
-# **README: SARSA-based Investment Optimization in Asset Allocation Environment**  
+# **SARSA-based Investment Optimization in Asset Allocation Environment**  
 
 ## **Overview**
 This project implements a **SARSA (State-Action-Reward-State-Action) reinforcement learning agent** to optimize investment decisions in a simulated asset allocation environment. The environment models the evolution of an investor’s wealth over a finite time horizon, considering both **risk-free and risky assets**.
