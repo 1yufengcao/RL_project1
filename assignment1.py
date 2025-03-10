@@ -11,7 +11,7 @@ class Environment(ABC):
         pass
 
 class AssetEnv(Environment):
-    def __init__(self, initial_wealth=10, T=10, aversion_rate=0.01, riskless_return=2,
+    def __init__(self, initial_wealth=10, T=10, aversion_rate=0.01, riskless_return=0.38,
                  risky_return=None, action_space=None):
         if risky_return is None:
             risky_return = {0.4: 0.5, 0.6: 0.3}  # 概率到收益率的映射
@@ -140,7 +140,7 @@ class SARSAAgent:
 if __name__ == '__main__':
     env = AssetEnv(initial_wealth=10, T=10)
     agent = SARSAAgent(env)
-    Q, policy = agent.train(episodes=1000)
+    Q, policy = agent.train(episodes=10000)
     # 输出最终策略示例
     hist = []
     for t in range(env.T):
