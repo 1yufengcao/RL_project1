@@ -1,5 +1,6 @@
 import numpy as np
 from abc import ABC, abstractmethod
+from matplotlib import pyplot as plt
 
 class Environment(ABC):
     @abstractmethod
@@ -136,11 +137,21 @@ class SARSAAgent:
                 wealth, action, t = next_wealth, next_action, t+1
 
         return self.Q, self.policy
+    
+    def show_dist(self):
+        """ 显示策略分布 """
+        count = [value for key, value in self.policy.items() if key[0] != self.env.T - 1]
+        plt.hist(count, bins=len(self.env.action_space), edgecolor='black')
+        plt.xlabel("Action")
+        plt.ylabel("Frequency")
+        plt.title("Policy Distribution")
+        plt.show()
 
 if __name__ == '__main__':
     env = AssetEnv(initial_wealth=10, T=10)
     agent = SARSAAgent(env)
     Q, policy = agent.train(episodes=1000)
+    agent.show_dist()
     
     # 输出最终策略示例
     for t in range(env.T):
